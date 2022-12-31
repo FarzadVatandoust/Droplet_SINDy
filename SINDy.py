@@ -62,7 +62,7 @@ for j in range(len(u_hat[0])):
 
 
 # Apply algo21
-LAMBDA = 0.8
+LAMBDA = 0.01
 
 coefficients = np.zeros((len(a[0]), mod_number))
 
