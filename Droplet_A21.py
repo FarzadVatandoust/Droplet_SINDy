@@ -20,7 +20,7 @@ def Data2SVD(data, data_number, shape):
 data = np.genfromtxt("2r4.csv", delimiter=",")
 # Every column represent the simulation for different time 
 # which is flattend from rectangular domain
-data = data[:, 2:203]
+data = data[:, 2:403]
 # This is the data shape of data on rectangular domain
 shape = (50, 150)
 dt = 0.01 # Time step
@@ -30,7 +30,7 @@ data_number = data.shape[1]
 # Compute SVD
 U, S, V, data_mean = Data2SVD(data, data_number, shape)
 
-mod_number = 10
+mod_number = 8
 
 # calculate POD coefficients
 u_gt = np.zeros((data_number, mod_number))
