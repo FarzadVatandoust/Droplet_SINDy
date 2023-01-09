@@ -18,9 +18,12 @@ data = np.reshape(data, (-1, 50 , 150, 1))
 shape = (50, 150, 1)
 time_step = 0.01
 cap_time = 4
+time = np.arange(1, len(data[:, 0])+1)
 
 #--->>> Load the Autoencoder <<<---#
-NN = AutoE(shape)
+bottelneck = 4
+filter_shape = (5, 5)
+NN = AutoE(shape, bottelneck,  filter_shape)
 NN.create_model(summary=False)
 NN.autoencoder.load_weights('autoencoder.h5')
 
@@ -32,7 +35,7 @@ l_data = NN.encoder(data).numpy()
 
 
 #--->>> Apply the SINDy Algo <<<---#
-mod_number = 3
+mod_number = bottelneck
 dt = 0.01 # Time step
 
 u_hat =  l_data
@@ -44,7 +47,7 @@ poly = PolynomialFeatures(degree=5, interaction_only=False)
 p1 = poly.fit_transform(u_hat)
 
 # p2=p3=1
-poly = PolynomialFeatures(degree=3, interaction_only=False)
+poly = PolynomialFeatures(degree=1, interaction_only=False)
 p2 = np.delete(np.sin(poly.fit_transform(u_hat)), 0, 1)
 p3 = np.delete(np.cos(poly.fit_transform(u_hat)), 0, 1)
 
@@ -62,7 +65,7 @@ for j in range(len(u_hat[0])):
 
 
 # Apply algo21
-LAMBDA = 0.01
+LAMBDA = 0.00008
 
 coefficients = np.zeros((len(a[0]), mod_number))
 
@@ -87,22 +90,16 @@ for i in range(mod_number):
             dt + u_identified[j-1, i]
 
 
+#  The performance of the model in latent space
+
 fig = plt.figure(figsize=(10, 4.5))
-ax1 = fig.add_subplot(1, 3, 1, projection="3d")
-ax1.set_title("Lorenz System")
-plt.plot(u_hat[:, 0], u_hat[:, 1], u_hat[:, 2])
-ax1.set(xlabel="$u1$", ylabel="$u2$", zlabel="$u3$")
+for i in range(mod_number):
+    ax1 = fig.add_subplot(mod_number, 1, i + 1)
+    plt.plot(time, u_hat[:, i], label='original')
+    plt.plot(time, u_identified[:, i], label='predicted')
+    ax1.set(xlabel="$i$", ylabel="Mode {}".format(i+1))
+    ax1.legend(loc='lower right')
 
-
-ax2 = fig.add_subplot(1, 3, 2, projection="3d")
-ax2.set_title("Lorenz System with Noise")
-plt.plot(u_hat[:, 0], u_hat[:, 1], u_hat[:, 2])
-ax2.set(xlabel="$u1$", ylabel="$u2$", zlabel="$u3$")
-
-ax3 = fig.add_subplot(1, 3, 3, projection="3d")
-ax3.set_title("Identified System")
-plt.plot(u_identified[:, 0], u_identified[:, 1], u_identified[:, 2])
-ax3.set(xlabel="$u1$", ylabel="$u2$", zlabel="$u3$")
 
 plt.show()
 
@@ -211,7 +208,5 @@ def im_func(i):
 
 
 ani = animation.FuncAnimation(fig, im_func)
-ani.save("ani")
-
 plt.show()
 
